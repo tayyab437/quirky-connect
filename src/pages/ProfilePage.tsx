@@ -1,0 +1,142 @@
+import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LogOut, User, Link2, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import { motion } from "framer-motion";
+
+interface Profile {
+  full_name: string | null;
+  brand_name: string | null;
+  bio: string | null;
+}
+
+interface SocialAccount {
+  id: string;
+  platform: string;
+  account_name: string | null;
+  status: string;
+}
+
+const platformIcons: Record<string, string> = {
+  facebook: "📘",
+  instagram: "📸",
+  linkedin: "💼",
+};
+
+const statusIcons: Record<string, typeof CheckCircle> = {
+  connected: CheckCircle,
+  expired: AlertCircle,
+  error: XCircle,
+};
+
+const statusColors: Record<string, string> = {
+  connected: "text-success",
+  expired: "text-warning",
+  error: "text-destructive",
+};
+
+const ProfilePage = () => {
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+  const [profile, setProfile] = useState<Profile>({ full_name: "", brand_name: "", bio: "" });
+  const [accounts, setAccounts] = useState<SocialAccount[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("*").eq("id", user.id).single().then(({ data }) => {
+      if (data) setProfile({ full_name: data.full_name, brand_name: data.brand_name, bio: data.bio });
+    });
+    supabase.from("social_accounts").select("*").eq("user_id", user.id).then(({ data }) => {
+      setAccounts(data ?? []);
+    });
+  }, [user]);
+
+  const saveProfile = async () => {
+    if (!user) return;
+    setSaving(true);
+    const { error } = await supabase.from("profiles").update(profile).eq("id", user.id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else toast({ title: "Profile updated!" });
+    setSaving(false);
+  };
+
+  return (
+    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto">
+      <h1 className="text-2xl font-heading font-bold text-foreground mb-6">Profile</h1>
+
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+        {/* Avatar & Email */}
+        <div className="flex items-center gap-4 bg-card rounded-xl p-4 shadow-card">
+          <div className="w-14 h-14 rounded-full gradient-primary flex items-center justify-center">
+            <User className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <div>
+            <p className="font-medium text-foreground">{profile.full_name || "User"}</p>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
+          </div>
+        </div>
+
+        {/* Profile Form */}
+        <div className="bg-card rounded-xl p-4 shadow-card space-y-4">
+          <div className="space-y-2">
+            <Label>Full Name</Label>
+            <Input value={profile.full_name ?? ""} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Brand Name</Label>
+            <Input value={profile.brand_name ?? ""} onChange={(e) => setProfile({ ...profile, brand_name: e.target.value })} placeholder="Your brand or company" />
+          </div>
+          <div className="space-y-2">
+            <Label>Bio</Label>
+            <Input value={profile.bio ?? ""} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} placeholder="Tell us about you" />
+          </div>
+          <Button className="w-full gradient-primary text-primary-foreground" onClick={saveProfile} disabled={saving}>
+            Save Changes
+          </Button>
+        </div>
+
+        {/* Connected Accounts */}
+        <div>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide flex items-center gap-2">
+            <Link2 className="w-4 h-4" /> Connected Accounts
+          </h2>
+          {accounts.length === 0 ? (
+            <div className="bg-card rounded-xl p-6 shadow-card text-center">
+              <p className="text-sm text-muted-foreground">No accounts connected yet</p>
+              <p className="text-xs text-muted-foreground mt-1">OAuth integration requires API keys to be configured</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {accounts.map((acc) => {
+                const StatusIcon = statusIcons[acc.status] ?? AlertCircle;
+                return (
+                  <div key={acc.id} className="bg-card rounded-xl p-4 shadow-card flex items-center gap-3">
+                    <span className="text-2xl">{platformIcons[acc.platform] ?? "🌐"}</span>
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground text-sm capitalize">{acc.platform}</p>
+                      <p className="text-xs text-muted-foreground">{acc.account_name ?? "Unknown"}</p>
+                    </div>
+                    <StatusIcon className={`w-5 h-5 ${statusColors[acc.status] ?? "text-muted-foreground"}`} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Sign Out */}
+        <Button variant="outline" className="w-full gap-2 text-destructive" onClick={signOut}>
+          <LogOut className="w-4 h-4" />
+          Sign Out
+        </Button>
+      </motion.div>
+    </div>
+  );
+};
+
+export default ProfilePage;
