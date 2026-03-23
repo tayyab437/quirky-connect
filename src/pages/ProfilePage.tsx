@@ -5,8 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogOut, User, Link2, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import { LogOut, User, Link2, CheckCircle, AlertCircle, XCircle, Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSearchParams } from "react-router-dom";
 
 interface Profile {
   full_name: string | null;
@@ -39,21 +40,49 @@ const statusColors: Record<string, string> = {
   error: "text-destructive",
 };
 
+const availablePlatforms = [
+  { id: "facebook", label: "Facebook", icon: "📘" },
+  { id: "instagram", label: "Instagram", icon: "📸" },
+  { id: "linkedin", label: "LinkedIn", icon: "💼" },
+];
+
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [profile, setProfile] = useState<Profile>({ full_name: "", brand_name: "", bio: "" });
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [saving, setSaving] = useState(false);
+  const [connecting, setConnecting] = useState<string | null>(null);
+
+  // Handle OAuth redirect results
+  useEffect(() => {
+    const success = searchParams.get("oauth_success");
+    const error = searchParams.get("oauth_error");
+    if (success) {
+      toast({ title: `${success} connected successfully!` });
+      setSearchParams({}, { replace: true });
+      loadAccounts();
+    }
+    if (error) {
+      toast({ title: "Connection failed", description: decodeURIComponent(error), variant: "destructive" });
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams]);
+
+  const loadAccounts = () => {
+    if (!user) return;
+    supabase.from("social_accounts").select("*").eq("user_id", user.id).then(({ data }) => {
+      setAccounts(data ?? []);
+    });
+  };
 
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("*").eq("id", user.id).single().then(({ data }) => {
       if (data) setProfile({ full_name: data.full_name, brand_name: data.brand_name, bio: data.bio });
     });
-    supabase.from("social_accounts").select("*").eq("user_id", user.id).then(({ data }) => {
-      setAccounts(data ?? []);
-    });
+    loadAccounts();
   }, [user]);
 
   const saveProfile = async () => {
@@ -64,6 +93,35 @@ const ProfilePage = () => {
     else toast({ title: "Profile updated!" });
     setSaving(false);
   };
+
+  const connectPlatform = async (platform: string) => {
+    setConnecting(platform);
+    try {
+      const { data, error } = await supabase.functions.invoke("social-oauth-start", {
+        body: { platform },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast({ title: "Connection failed", description: err.message, variant: "destructive" });
+      setConnecting(null);
+    }
+  };
+
+  const disconnectPlatform = async (accountId: string, platform: string) => {
+    const { error } = await supabase.from("social_accounts").delete().eq("id", accountId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: `${platform} disconnected` });
+      loadAccounts();
+    }
+  };
+
+  const connectedPlatforms = accounts.map((a) => a.platform);
+  const unconnectedPlatforms = availablePlatforms.filter((p) => !connectedPlatforms.includes(p.id));
 
   return (
     <div className="px-4 pt-6 pb-4 max-w-lg mx-auto">
@@ -105,13 +163,10 @@ const ProfilePage = () => {
           <h2 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide flex items-center gap-2">
             <Link2 className="w-4 h-4" /> Connected Accounts
           </h2>
-          {accounts.length === 0 ? (
-            <div className="bg-card rounded-xl p-6 shadow-card text-center">
-              <p className="text-sm text-muted-foreground">No accounts connected yet</p>
-              <p className="text-xs text-muted-foreground mt-1">OAuth integration requires API keys to be configured</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
+
+          {/* Existing connections */}
+          {accounts.length > 0 && (
+            <div className="space-y-2 mb-3">
               {accounts.map((acc) => {
                 const StatusIcon = statusIcons[acc.status] ?? AlertCircle;
                 return (
@@ -122,9 +177,44 @@ const ProfilePage = () => {
                       <p className="text-xs text-muted-foreground">{acc.account_name ?? "Unknown"}</p>
                     </div>
                     <StatusIcon className={`w-5 h-5 ${statusColors[acc.status] ?? "text-muted-foreground"}`} />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      onClick={() => disconnectPlatform(acc.id, acc.platform)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Connect new platforms */}
+          {unconnectedPlatforms.length > 0 && (
+            <div className="space-y-2">
+              {unconnectedPlatforms.map((p) => (
+                <Button
+                  key={p.id}
+                  variant="outline"
+                  className="w-full justify-start gap-3 h-12"
+                  onClick={() => connectPlatform(p.id)}
+                  disabled={connecting === p.id}
+                >
+                  <span className="text-xl">{p.icon}</span>
+                  <span className="flex-1 text-left">
+                    {connecting === p.id ? "Redirecting..." : `Connect ${p.label}`}
+                  </span>
+                  <Plus className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {accounts.length === 0 && unconnectedPlatforms.length === 0 && (
+            <div className="bg-card rounded-xl p-6 shadow-card text-center">
+              <p className="text-sm text-muted-foreground">All platforms connected!</p>
             </div>
           )}
         </div>
