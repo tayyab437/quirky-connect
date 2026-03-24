@@ -199,14 +199,25 @@ const CreatePostPage = () => {
           <Button variant="outline" className="flex-1" onClick={() => handleSave("draft")} disabled={saving}>
             Save Draft
           </Button>
-          <Button
-            className="flex-1 gradient-primary text-primary-foreground gap-2"
-            onClick={() => handleSave(scheduledTime ? "scheduled" : "ready")}
-            disabled={saving || !content}
-          >
-            <Send className="w-4 h-4" />
-            {scheduledTime ? "Schedule" : "Post"}
-          </Button>
+          {scheduledTime ? (
+            <Button
+              className="flex-1 gradient-primary text-primary-foreground gap-2"
+              onClick={() => handleSave("scheduled")}
+              disabled={saving || !content}
+            >
+              <Calendar className="w-4 h-4" />
+              Schedule
+            </Button>
+          ) : (
+            <Button
+              className="flex-1 gradient-primary text-primary-foreground gap-2"
+              onClick={() => handleSave("publish")}
+              disabled={saving || !content || selectedPlatforms.length === 0}
+            >
+              <Send className="w-4 h-4" />
+              {saving ? "Publishing..." : "Publish Now"}
+            </Button>
+          )}
         </div>
       </motion.div>
     </div>
