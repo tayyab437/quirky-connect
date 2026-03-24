@@ -52,9 +52,7 @@ Deno.serve(async (req) => {
       const META_APP_ID = Deno.env.get("META_APP_ID");
       if (!META_APP_ID) throw new Error("META_APP_ID not configured");
 
-      const scopes = platform === "instagram"
-        ? "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement"
-        : "pages_manage_posts,pages_read_engagement,pages_show_list";
+      const scopes = "email,public_profile";
 
       authUrl =
         `https://www.facebook.com/v21.0/dialog/oauth?` +
