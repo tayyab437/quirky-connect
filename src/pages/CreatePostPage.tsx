@@ -40,7 +40,7 @@ const CreatePostPage = () => {
     }
   };
 
-  const handleSave = async (status: "draft" | "ready" | "scheduled") => {
+  const handleSave = async (status: "draft" | "ready" | "scheduled" | "publish") => {
     if (!user) return;
     setSaving(true);
 
@@ -59,19 +59,42 @@ const CreatePostPage = () => {
         .map((h) => h.replace(/^#/, "").trim())
         .filter(Boolean);
 
-      const { error } = await supabase.from("posts").insert({
+      const insertStatus = status === "publish" ? "ready" : status;
+
+      const { data: newPost, error } = await supabase.from("posts").insert({
         user_id: user.id,
         content,
         media_url: mediaUrl,
         platforms: selectedPlatforms,
         hashtags: hashtagArray,
-        status,
+        status: insertStatus,
         scheduled_time: status === "scheduled" && scheduledTime ? scheduledTime : null,
-      });
+      }).select().single();
 
       if (error) throw error;
 
-      toast({ title: status === "draft" ? "Draft saved!" : status === "scheduled" ? "Post scheduled!" : "Post ready!" });
+      // If publishing now, call the publish edge function
+      if (status === "publish" && newPost) {
+        toast({ title: "Publishing to platforms..." });
+        const { data: pubResult, error: pubError } = await supabase.functions.invoke("publish-post", {
+          body: { post_id: newPost.id },
+        });
+        if (pubError) throw pubError;
+
+        const failedPlatforms = pubResult?.results?.filter((r: any) => !r.success) ?? [];
+        if (failedPlatforms.length > 0) {
+          toast({
+            title: "Some platforms failed",
+            description: failedPlatforms.map((f: any) => `${f.platform}: ${f.error}`).join("; "),
+            variant: "destructive",
+          });
+        } else {
+          toast({ title: "Published successfully! 🎉" });
+        }
+      } else {
+        toast({ title: status === "draft" ? "Draft saved!" : status === "scheduled" ? "Post scheduled!" : "Post ready!" });
+      }
+
       setContent("");
       setHashtags("");
       setSelectedPlatforms([]);
