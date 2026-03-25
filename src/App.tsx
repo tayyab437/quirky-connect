@@ -8,6 +8,7 @@ import AppLayout from "@/components/AppLayout";
 import AuthPage from "@/pages/AuthPage";
 import Index from "@/pages/Index";
 import CreatePostPage from "@/pages/CreatePostPage";
+import PostHistoryPage from "@/pages/PostHistoryPage";
 import AgentsPage from "@/pages/AgentsPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
 import ProfilePage from "@/pages/ProfilePage";
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/auth" element={<AuthRoute />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/create" element={<ProtectedRoute><CreatePostPage /></ProtectedRoute>} />
+            <Route path="/history" element={<ProtectedRoute><PostHistoryPage /></ProtectedRoute>} />
             <Route path="/agents" element={<ProtectedRoute><AgentsPage /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
