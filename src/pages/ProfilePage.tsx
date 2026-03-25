@@ -5,9 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogOut, User, Link2, CheckCircle, AlertCircle, XCircle, Plus, Trash2 } from "lucide-react";
+import { LogOut, User, Link2, CheckCircle, AlertCircle, XCircle, Plus, Trash2, Bot, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 interface Profile {
   full_name: string | null;
@@ -49,6 +49,7 @@ const availablePlatforms = [
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [profile, setProfile] = useState<Profile>({ full_name: "", brand_name: "", bio: "" });
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
@@ -218,6 +219,17 @@ const ProfilePage = () => {
             </div>
           )}
         </div>
+
+        {/* AI Agents */}
+        <Button
+          variant="outline"
+          className="w-full justify-start gap-3 h-12"
+          onClick={() => navigate("/agents")}
+        >
+          <Bot className="w-5 h-5 text-primary" />
+          <span className="flex-1 text-left font-medium">AI Agents</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </Button>
 
         {/* Sign Out */}
         <Button variant="outline" className="w-full gap-2 text-destructive" onClick={signOut}>
