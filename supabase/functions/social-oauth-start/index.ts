@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       const META_APP_ID = Deno.env.get("META_APP_ID");
       if (!META_APP_ID) throw new Error("META_APP_ID not configured");
 
-      const scopes = "email,public_profile";
+      const scopes = "email,public_profile,pages_show_list,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_manage_insights";
 
       authUrl =
         `https://www.facebook.com/v21.0/dialog/oauth?` +
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
       const LINKEDIN_CLIENT_ID = Deno.env.get("LINKEDIN_CLIENT_ID");
       if (!LINKEDIN_CLIENT_ID) throw new Error("LINKEDIN_CLIENT_ID not configured");
 
-      const scopes = "openid profile email w_member_social";
+      const scopes = "openid profile email w_member_social r_member_social";
 
       authUrl =
         `https://www.linkedin.com/oauth/v2/authorization?` +
