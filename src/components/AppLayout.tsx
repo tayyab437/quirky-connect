@@ -1,12 +1,12 @@
 import { ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, PenSquare, Bot, BarChart3, UserCircle } from "lucide-react";
+import { Home, PenSquare, ClockArrowUp, Bot, BarChart3, UserCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 const navItems = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/create", icon: PenSquare, label: "Create" },
-  { path: "/agents", icon: Bot, label: "Agents" },
+  { path: "/history", icon: ClockArrowUp, label: "History" },
   { path: "/analytics", icon: BarChart3, label: "Analytics" },
   { path: "/profile", icon: UserCircle, label: "Profile" },
 ];
