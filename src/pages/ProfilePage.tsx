@@ -231,6 +231,33 @@ const ProfilePage = () => {
           )}
         </div>
 
+        {/* Appearance */}
+        <div className="bg-card rounded-xl p-4 shadow-card space-y-4">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+            <Palette className="w-4 h-4" /> Appearance
+          </h2>
+          <div className="flex gap-2">
+            {THEMES.map(t => (
+              <button
+                key={t.id}
+                onClick={() => setTheme(t.id)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-colors flex-1",
+                  theme === t.id ? "border-primary bg-primary/5" : "border-border"
+                )}
+              >
+                <div className={cn("w-4 h-4 rounded-full", t.color)} />
+                <span className="text-xs font-medium text-foreground">{t.label}</span>
+                {theme === t.id && <Check className="w-3 h-3 text-primary ml-auto" />}
+              </button>
+            ))}
+          </div>
+          <Button variant="outline" className="w-full gap-2" onClick={toggleMode}>
+            {mode === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {mode === "dark" ? "Switch to Light" : "Switch to Dark"}
+          </Button>
+        </div>
+
         {/* AI Agents */}
         <Button
           variant="outline"
@@ -241,6 +268,19 @@ const ProfilePage = () => {
           <span className="flex-1 text-left font-medium">AI Agents</span>
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </Button>
+
+        {/* Admin Panel (visible to admins only) */}
+        {isAdmin && (
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-3 h-12"
+            onClick={() => navigate("/admin")}
+          >
+            <Shield className="w-5 h-5 text-primary" />
+            <span className="flex-1 text-left font-medium">Admin Panel</span>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </Button>
+        )}
 
         {/* Sign Out */}
         <Button variant="outline" className="w-full gap-2 text-destructive" onClick={signOut}>
