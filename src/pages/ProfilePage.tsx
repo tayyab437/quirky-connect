@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
+import { useTheme, AppTheme } from "@/hooks/useTheme";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogOut, User, Link2, CheckCircle, AlertCircle, XCircle, Plus, Trash2, Bot, ChevronRight } from "lucide-react";
+import { LogOut, User, Link2, CheckCircle, AlertCircle, XCircle, Plus, Trash2, Bot, ChevronRight, Shield, Moon, Sun, Check, Palette } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface Profile {
   full_name: string | null;
