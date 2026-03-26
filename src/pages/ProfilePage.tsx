@@ -49,8 +49,16 @@ const availablePlatforms = [
   { id: "linkedin", label: "LinkedIn", icon: "💼" },
 ];
 
+const THEMES: { id: AppTheme; label: string; color: string }[] = [
+  { id: "default", label: "Purple", color: "bg-purple-500" },
+  { id: "ocean", label: "Ocean", color: "bg-cyan-500" },
+  { id: "sunset", label: "Sunset", color: "bg-orange-500" },
+];
+
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
+  const { theme, setTheme, mode, toggleMode } = useTheme();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
