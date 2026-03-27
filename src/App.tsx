@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { LayoutProvider } from "@/hooks/useLayoutStyle";
 import { useAdmin } from "@/hooks/useAdmin";
 import AppLayout from "@/components/AppLayout";
 import AdminLayout from "@/pages/admin/AdminLayout";
@@ -19,6 +20,8 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsersPage from "@/pages/admin/AdminUsersPage";
 import AdminPostsPage from "@/pages/admin/AdminPostsPage";
 import AdminSocialAccountsPage from "@/pages/admin/AdminSocialAccountsPage";
+import AdminBlogsPage from "@/pages/admin/AdminBlogsPage";
+import AdminDatabasePage from "@/pages/admin/AdminDatabasePage";
 import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
 import NotFound from "@/pages/NotFound";
 
@@ -64,29 +67,33 @@ function AuthRoute() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/auth" element={<AuthRoute />} />
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/create" element={<ProtectedRoute><CreatePostPage /></ProtectedRoute>} />
-              <Route path="/history" element={<ProtectedRoute><PostHistoryPage /></ProtectedRoute>} />
-              <Route path="/agents" element={<ProtectedRoute><AgentsPage /></ProtectedRoute>} />
-              <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-              <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
-              <Route path="/admin/posts" element={<AdminRoute><AdminPostsPage /></AdminRoute>} />
-              <Route path="/admin/social-accounts" element={<AdminRoute><AdminSocialAccountsPage /></AdminRoute>} />
-              <Route path="/admin/settings" element={<AdminRoute><AdminSettingsPage /></AdminRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+      <LayoutProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <Routes>
+                <Route path="/auth" element={<AuthRoute />} />
+                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/create" element={<ProtectedRoute><CreatePostPage /></ProtectedRoute>} />
+                <Route path="/history" element={<ProtectedRoute><PostHistoryPage /></ProtectedRoute>} />
+                <Route path="/agents" element={<ProtectedRoute><AgentsPage /></ProtectedRoute>} />
+                <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
+                <Route path="/admin/posts" element={<AdminRoute><AdminPostsPage /></AdminRoute>} />
+                <Route path="/admin/social-accounts" element={<AdminRoute><AdminSocialAccountsPage /></AdminRoute>} />
+                <Route path="/admin/blogs" element={<AdminRoute><AdminBlogsPage /></AdminRoute>} />
+                <Route path="/admin/database" element={<AdminRoute><AdminDatabasePage /></AdminRoute>} />
+                <Route path="/admin/settings" element={<AdminRoute><AdminSettingsPage /></AdminRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </LayoutProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
